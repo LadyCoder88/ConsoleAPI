@@ -14,8 +14,8 @@ namespace Gif
             :m_RGBColor(RGBColor),
             m_alpha(isTransparent ? 0 : 255) {}
 
-        Color m_RGBColor;
         unsigned char m_alpha = 255;
+        Color m_RGBColor;
     };
 
     class GifObject
@@ -46,7 +46,7 @@ namespace Gif
         //Function can throw std::out_of_range exception
         const Frame& GetFrame(int idx) const;
 
-        const std::string& GetFileName() const { m_fileName; }
+        const std::string& GetFileName() const { return m_fileName; }
         const RGBAColor& GetBackgroundColor() const { return m_backgroundColor; }
 
         class FrameInfo
@@ -54,26 +54,26 @@ namespace Gif
             friend class GifObject;
 
         public:
-            unsigned short GetFrameSizeX() const { return m_sizeX; }
-            unsigned short GetFrameSizeY() const { return m_sizeY; }
-            unsigned short GetFramePositionX() const { return m_coordX; }
-            unsigned short GetFramePositionY() const { return m_coordY; }
-            unsigned short GetDelayTime() const { return m_delay; }
+            short GetFrameSizeX() const { return m_sizeX; }
+            short GetFrameSizeY() const { return m_sizeY; }
+            short GetFramePositionX() const { return m_coordX; }
+            short GetFramePositionY() const { return m_coordY; }
+            short GetDelayTime() const { return m_delay; }
             const Gif::GraphicControlExtension::EDisposeMethod GetDisposeMethod() const { return m_disposeMethod; }
 
         protected:
-            FrameInfo(unsigned short size_x, unsigned short size_y)
+            FrameInfo(short size_x, short size_y)
                 :m_sizeX(size_x), m_sizeY(size_y), m_coordX(0), m_coordY(0) {}
-            FrameInfo(unsigned short size_x, unsigned short size_y, unsigned short coord_x, unsigned short coord_y, short _delay, Gif::GraphicControlExtension::EDisposeMethod disposeMethod)
+            FrameInfo(short size_x, short size_y, short coord_x, short coord_y, short _delay, Gif::GraphicControlExtension::EDisposeMethod disposeMethod)
                 :m_sizeX(size_x), m_sizeY(size_y), m_coordX(coord_x), m_coordY(coord_y), m_delay(_delay), m_disposeMethod(disposeMethod) {}
             FrameInfo()
                 :m_sizeX(0), m_sizeY(0), m_coordX(0), m_coordY(0) {}
 
-            unsigned short m_sizeX = 0;
-            unsigned short m_sizeY = 0;
-            unsigned short m_coordX = 0;
-            unsigned short m_coordY = 0;
-            unsigned short m_delay = 0;
+            short m_sizeX = 0;
+            short m_sizeY = 0;
+            short m_coordX = 0;
+            short m_coordY = 0;
+            short m_delay = 0;
 
             Gif::GraphicControlExtension::EDisposeMethod m_disposeMethod;
         };

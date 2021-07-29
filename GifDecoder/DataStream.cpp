@@ -35,6 +35,7 @@ DataStream::DataStream(const DataStream& data_stream)
 {
     m_header = data_stream.m_header;
     m_logicalScreenDescriptor = data_stream.m_logicalScreenDescriptor;
+    m_fileName = data_stream.m_fileName;
 
     m_globalColorTableSize = data_stream.m_globalColorTableSize;
     m_GlobalColorTable = new Color[m_globalColorTableSize];
@@ -62,6 +63,8 @@ DataStream::DataStream(DataStream&& data_stream)
     m_logicalScreenDescriptor = std::move(data_stream.m_logicalScreenDescriptor);
 
     m_TableData = std::move(data_stream.m_TableData);
+
+    m_fileName = std::move(data_stream.m_fileName);
 }
 
 //------------------------------------------------------------------------------

@@ -386,3 +386,21 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+ConsoleApiTest/debuging.txt
+Data/CGA-NTSC-colors.png
+Data/color.bmp
+Data/emot_icon.gif
+Data/tabela_colorow.bmp
+Data/face.gif
+Data/giphy.gif
+Data/misiu.gif
+Data/miziu.gif
+Data/pikaczu.gif
+Data/pikaczu2.gif
+Data/spin.gif
+Data/tabela_colorow.gif
+Data/windows_pallette.gif
+Data/windows_pallette.png
+GifDecoder/color_debug.txt
+GifDecoder/debuging.txt
+GifDecoder/frame_dump.txt

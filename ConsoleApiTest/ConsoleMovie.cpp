@@ -26,8 +26,6 @@ ConsoleMovie::ConsoleMovie(MovieCOORD image_size, int frames_count, int interval
     {
         m_frames.emplace_back(new CHAR_INFO[frame_characters], info);
     }
-
-    m_background = new CHAR_INFO[frame_characters];
 }
 
 FrameInfo& ConsoleMovie::GetFrameInfo(int frame_number)
@@ -76,53 +74,126 @@ static void FrameDump(CHAR_INFO* frame, int size, int width)
 }
 
 ConsoleMovie::ConsoleMovie(const Gif::GifObject& gifObject)
-    :IConsoleMovie({gifObject.GetImageWigth(), gifObject.GetImageHeight()}, gifObject.GetFrameCount(), true)
+    :IConsoleMovie({gifObject.GetImageWigth(), gifObject.GetImageHeight()}, gifObject.GetFrameCount(), true, gifObject.GetFileName().c_str())
 {
     m_frames.reserve(gifObject.GetFrameCount());
-    int image_size = m_imageSize.X * m_imageSize.Y;
+    unsigned int image_size = m_imageSize.X * m_imageSize.Y;
 
     m_backgroundColor = Gif::Color::ConvertTo4Bit(gifObject.GetBackgroundColor().m_RGBColor);
+
+    unsigned short* m_TemporaryBackgroundBuffer = new unsigned short[image_size];
+    for (unsigned int i = 0; i < image_size; ++i)
+    {
+        m_TemporaryBackgroundBuffer[i] = m_backgroundColor;
+    }
 
     for (int i = 0; i < m_frames_count; ++i)
     {
         const Gif::GifObject::Frame& frame = gifObject.GetFrame(i);
         const Gif::GifObject::FrameInfo& frameinfo = frame.GetFrameInfo();
 
-        FrameInfo frame_info(frameinfo.GetFrameSizeX(),
-            frameinfo.GetFrameSizeY(),
-            frameinfo.GetFramePositionX(),
-            frameinfo.GetFramePositionY(),
-            frameinfo.GetDelayTime() * 10);
-        frame_info.m_restore_to_backgroundColor = frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToBackgroundColor;
-
-        m_frames.emplace_back(new CHAR_INFO[image_size], frame_info);
-
-        int frames_info_count = 0;
-        for (int j = 0; j < frame_info.m_size.Y; ++j)
+        if (i > 0 && (gifObject.GetFrame(i - 1).GetFrameInfo().GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToPrevious ||
+                gifObject.GetFrame(i - 1).GetFrameInfo().GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToBackgroundColor))
         {
-            for (int k = 0; k < frame_info.m_size.X; ++k)
+            const Gif::GifObject::Frame& prev_frame = gifObject.GetFrame(i-1);
+            const Gif::GifObject::FrameInfo& prev_frameinfo = prev_frame.GetFrameInfo();
+
+            short position_min_x = frameinfo.GetFramePositionX() < prev_frameinfo.GetFramePositionX() ? frameinfo.GetFramePositionX() : prev_frameinfo.GetFramePositionX();
+            short position_min_y = frameinfo.GetFramePositionY() < prev_frameinfo.GetFramePositionY() ? frameinfo.GetFramePositionY() : prev_frameinfo.GetFramePositionY();
+            
+            short diff_pos_x = frameinfo.GetFramePositionX() - prev_frameinfo.GetFramePositionX();
+            short diff_pos_y = frameinfo.GetFramePositionY() - prev_frameinfo.GetFramePositionY();
+
+            short position_max_x = (frameinfo.GetFramePositionX() + frameinfo.GetFrameSizeX()) > (prev_frameinfo.GetFramePositionX() + prev_frameinfo.GetFrameSizeX()) 
+                ? (frameinfo.GetFramePositionX() + frameinfo.GetFrameSizeX()) : (prev_frameinfo.GetFramePositionX() + prev_frameinfo.GetFrameSizeX());
+            short position_max_y = (frameinfo.GetFramePositionY() + frameinfo.GetFrameSizeY()) > (prev_frameinfo.GetFramePositionY() + prev_frameinfo.GetFrameSizeY())
+                ? (frameinfo.GetFramePositionY() + frameinfo.GetFrameSizeY()) : (prev_frameinfo.GetFramePositionY() + prev_frameinfo.GetFrameSizeY());
+
+            FrameInfo frame_info(position_max_x - position_min_x,
+                position_max_y - position_min_y,
+                position_min_x,
+                position_min_y,
+                frameinfo.GetDelayTime() * 10);
+
+            unsigned int current_image_size = frame_info.m_size.X * frame_info.m_size.Y;
+            m_frames.emplace_back(new CHAR_INFO[current_image_size], frame_info);
+
+            int frames_info_count = 0;
+            for (int j = 0; j < frame_info.m_size.Y; ++j)
             {
-                const Gif::RGBAColor color = frame.GetData()[frames_info_count++];
-
-                int idx = (j + frame_info.m_coord.Y) * m_imageSize.X + (k + frame_info.m_coord.X);
-                CHAR_INFO& info = m_frames[i].first[idx];
-                info.Char.AsciiChar = ' ';
-                info.Char.UnicodeChar = info.Char.AsciiChar;
-
-                if (color.m_alpha == 0)
+                for (int k = 0; k < frame_info.m_size.X; ++k)
                 {
-                    if (i > 0)
+                    int buffer_idx = (j + frame_info.m_coord.Y) * m_imageSize.X + (k + frame_info.m_coord.X);
+                    int frame_idx = j * frame_info.m_size.X + k;
+
+                    CHAR_INFO& info = m_frames[i].first[frame_idx];
+                    info.Char.AsciiChar = ' ';
+                    info.Char.UnicodeChar = info.Char.AsciiChar;
+                    info.Attributes = m_TemporaryBackgroundBuffer[buffer_idx];
+
+                    if (((diff_pos_x < 0 && k < frameinfo.GetFrameSizeX()) || (diff_pos_x >= 0 && k >= diff_pos_x && k < diff_pos_x + frameinfo.GetFrameSizeX()))
+                        &&
+                        ((diff_pos_y < 0 && j < frameinfo.GetFrameSizeY()) || (diff_pos_y >= 0 && j >= diff_pos_y && j < diff_pos_y + frameinfo.GetFrameSizeY())))
                     {
-                        info.Attributes = m_frames[i - 1].first[idx].Attributes;
-                    }
-                    else
-                    {
-                        info.Attributes = m_backgroundColor;
+                        const Gif::RGBAColor color = frame.GetData()[frames_info_count++];
+                        if (color.m_alpha != 0)
+                        {
+                            info.Attributes = Gif::Color::ConvertTo4Bit(color.m_RGBColor);
+                        }
+ 
+                        if (frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::NoAction ||
+                            frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::DoNotDispose)
+                        {
+                            m_TemporaryBackgroundBuffer[buffer_idx] = info.Attributes;
+                        }
+                        else if (frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToBackgroundColor)
+                        {
+                            m_TemporaryBackgroundBuffer[buffer_idx] = m_backgroundColor;
+                        }
                     }
                 }
-                else
+            }
+        }
+        else
+        {
+            FrameInfo frame_info(frameinfo.GetFrameSizeX(),
+                frameinfo.GetFrameSizeY(),
+                frameinfo.GetFramePositionX(),
+                frameinfo.GetFramePositionY(),
+                frameinfo.GetDelayTime() * 10);
+
+            unsigned int current_image_size = frame_info.m_size.X * frame_info.m_size.Y;
+            m_frames.emplace_back(new CHAR_INFO[current_image_size], frame_info);
+
+            int frames_info_count = 0;
+            for (int j = 0; j < frame_info.m_size.Y; ++j)
+            {
+                for (int k = 0; k < frame_info.m_size.X; ++k)
                 {
-                    info.Attributes = Gif::Color::ConvertTo4Bit(color.m_RGBColor);// 7
+                    const Gif::RGBAColor color = frame.GetData()[frames_info_count++];
+
+                    int buffer_idx = (j + frame_info.m_coord.Y) * m_imageSize.X + (k + frame_info.m_coord.X);
+                    int frame_idx = j * frame_info.m_size.X + k;
+
+                    CHAR_INFO& info = m_frames[i].first[frame_idx];
+                    info.Char.AsciiChar = ' ';
+                    info.Char.UnicodeChar = info.Char.AsciiChar;
+                    info.Attributes = m_TemporaryBackgroundBuffer[buffer_idx];
+
+                    if (color.m_alpha != 0)
+                    {
+                        info.Attributes = Gif::Color::ConvertTo4Bit(color.m_RGBColor);// 7
+                    }
+
+                    if (frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::NoAction ||
+                        frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::DoNotDispose)
+                    {
+                        m_TemporaryBackgroundBuffer[buffer_idx] = info.Attributes;
+                    }
+                    else if (frameinfo.GetDisposeMethod() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToBackgroundColor)
+                    {
+                        m_TemporaryBackgroundBuffer[buffer_idx] = m_backgroundColor;
+                    }
                 }
             }
         }
@@ -130,85 +201,9 @@ ConsoleMovie::ConsoleMovie(const Gif::GifObject& gifObject)
         //FrameDump(ptr, frame_characters, m_frame_size_x);
     }
 
-    CHAR_INFO background;
-    background.Attributes = m_backgroundColor;
-    background.Char.UnicodeChar = ' ';
-    background.Char.AsciiChar = ' ';
-
-    m_background = new CHAR_INFO[image_size];
-
-    InitTable(m_background, background, image_size);
-
     m_unitSize = 1;
 }
 
-// ConsoleMovie::ConsoleMovie(Gif::DataStream& data_stream)
-//     :IConsoleMovie({ data_stream.m_logicalScreenDescriptor.m_screenWidth, data_stream.m_logicalScreenDescriptor.m_screenHeight }, data_stream.m_TableData.size(), true)
-// {
-//     m_frames.reserve(m_frames_count);
-//     int image_size = m_imageSize.X * m_imageSize.Y;
-// 
-//     if (data_stream.m_logicalScreenDescriptor.GetIsGlobalColorTable())
-//     {
-//         m_backgroundColor = Gif::Color::ConvertTo4Bit(data_stream.m_GlobalColorTable[data_stream.m_logicalScreenDescriptor.m_backgroundColorIndex]);
-//     }
-// 
-//     for (int i = 0; i < m_frames_count; ++i)
-//     {
-//         Gif::TableBasedImage* table_image = data_stream.m_TableData[i];
-//  
-//         FrameInfo frame_info(table_image->m_imageDescriptor.m_imageWidth,
-//             table_image->m_imageDescriptor.m_imageHeight,
-//             table_image->m_imageDescriptor.m_imageLeftPosition,
-//             table_image->m_imageDescriptor.m_imageTopPosition,
-//             table_image->m_graphicControlExtension->m_delayTime * 10);
-//         frame_info.m_restore_to_backgroundColor = table_image->m_graphicControlExtension->GetDisposeMethos() == Gif::GraphicControlExtension::EDisposeMethod::RestoreToBackgroundColor;
-// 
-//         //int frame_characters = frame_info.m_size.X * frame_info.m_size.Y;
-//         //m_frames[i] = new CHAR_INFO[frame_characters];
-//         m_frames.emplace_back(new CHAR_INFO[image_size], frame_info);
-// //         if (i > 0)
-// //         {
-// //             CopyTable(m_frames[i-1], m_frames[i], image_size);
-// //         }
-// 
-//         int frames_info_count = 0;
-//         //for (int j = 0; j < frame_characters; ++j)
-//         for (int j = 0; j < frame_info.m_size.Y; ++j)
-//         {
-//             for (int k = 0; k < frame_info.m_size.X; ++k)
-//             {
-//                 const Gif::PixelInfo& value = table_image->m_imageData->m_decodedData[frames_info_count++];
-// 
-//                 int idx = (j + frame_info.m_coord.Y) * m_imageSize.X + (k + frame_info.m_coord.X);
-//                 CHAR_INFO& info = m_frames[i].first[idx];
-//                 info.Char.AsciiChar = ' ';
-//                 info.Char.UnicodeChar = info.Char.AsciiChar;
-// 
-//                 if (value.m_isTransparent &&  i > 0)
-//                 {
-//                     info.Attributes = m_frames[i - 0].first[idx].Attributes;
-//                 }
-//                 else
-//                 {
-//                     info.Attributes = (i == 0) ? m_backgroundColor : Gif::Color::ConvertTo4Bit(value.m_color);// 7
-//                 }  
-//             }  
-//         }
-//         //FrameDump(ptr, frame_characters, m_frame_size_x);
-//     }
-// 
-//     CHAR_INFO background;
-//     background.Attributes = m_backgroundColor;
-//     background.Char.UnicodeChar = ' ';
-//     background.Char.AsciiChar = ' ';
-// 
-//     m_background = new CHAR_INFO[image_size];
-// 
-//     InitTable(m_background, background, image_size);
-// 
-//     m_unitSize = 1;
-// }
 ////////////////////////////////////////////////////////////////////////////////
 ConsoleMovie::ConsoleMovie(const ConsoleMovie& movie): IConsoleMovie(movie)
 {
@@ -227,17 +222,11 @@ ConsoleMovie::ConsoleMovie(const ConsoleMovie& movie): IConsoleMovie(movie)
             m_frames[i].first[j] = movie.m_frames[i].first[j];
         }
     }
-
-    int size = m_imageSize.X * m_imageSize.Y;
-    m_background = new CHAR_INFO[size];
-    CopyTable(movie.m_background, m_background, size);
 }
 ////////////////////////////////////////////////////////////////////////////////
 ConsoleMovie::ConsoleMovie(ConsoleMovie&& movie): IConsoleMovie(std::move(movie))
 {
     m_frames = std::move(movie.m_frames);
-    m_background = std::move(movie.m_background);
-    movie.m_background = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////
 ConsoleMovie& ConsoleMovie::operator=(const ConsoleMovie& movie)
@@ -259,11 +248,6 @@ ConsoleMovie& ConsoleMovie::operator=(const ConsoleMovie& movie)
             m_frames[i].first[j] = movie.m_frames[i].first[j];
         }
     }
-
-    int size = m_imageSize.X * m_imageSize.Y;
-    m_background = new CHAR_INFO[size];
-    CopyTable(movie.m_background, m_background, size);
-
     return *this;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -272,8 +256,6 @@ ConsoleMovie& ConsoleMovie::operator=(ConsoleMovie&& movie)
     __super::operator=(std::move(movie));
 
     m_frames = std::move(movie.m_frames);
-    m_background = std::move(movie.m_background);
-    movie.m_background = nullptr;
 
     return *this;
 }
@@ -290,9 +272,6 @@ ConsoleMovie::~ConsoleMovie()
 
         m_frames.clear();
     }
-
-    delete[] m_background;
-    m_background = nullptr;
 }
 ///////////////////////////////////////////////////////////////////////////////
 ConsoleMovie ConsoleMovie::LoadConsoleMovie(std::string file_full_path)
@@ -355,11 +334,6 @@ ConsoleMovie ConsoleMovie::LoadCSolFile(std::string csol_file_full_path)
 ////////////////////////////////////////////////////////////////////////////////
 ConsoleMovie ConsoleMovie::LoadGifFile(std::string gif_file_full_path)
 {
-//     Gif::DataStream data_stream = Gif::DataStream::Load(gif_file_full_path.c_str());
-//     ConsoleMovie movie(data_stream);
-//     movie.m_fileName = gif_file_full_path;
-//     return movie;
-
     ConsoleMovie movie(Gif::GifDecoder::LoadGifFromFile(gif_file_full_path.c_str()));
     return movie;
 }

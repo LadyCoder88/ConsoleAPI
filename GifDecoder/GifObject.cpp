@@ -1,12 +1,14 @@
 #include "GifObject.h"
 #include "DataStream.h"
+#include <iostream>
+#include <filesystem>
 
 using namespace Gif;
 
 //-----------------------------------------------------------------------------------------------
 GifObject::GifObject(const DataStream& data_stream)
 {
-    m_fileName = data_stream.m_fileName;
+    m_fileName = std::filesystem::path(data_stream.m_fileName.c_str()).filename().generic_string();
     m_imageHeight = data_stream.m_logicalScreenDescriptor.m_screenHeight;
     m_imageWidth = data_stream.m_logicalScreenDescriptor.m_screenWidth;
 

@@ -215,46 +215,13 @@ int main()
     Underscore.
     */
 
-/*
-    for (int i = 0; i < 160; ++i)
-    {
-        chibuffer[i].Char.AsciiChar = '*';
-        chibuffer[i].Attributes = FOREGROUND_RED;
-
-        fSuccess = WriteConsoleOutput(
-            hNewScreenBuffer, //Screen buffer to write
-            chibuffer, //buffer to copy from
-            coordBufSize, //col-row size of chiBuffer
-            coordBufCoord, //top left src cell in chiBuffer
-            &srctWriteRect);
-
-        if (!fSuccess)
-        {
-            printf("Write console output failed - (%d)\n", GetLastError());
-            return 1;
-        }
-
-        Sleep(100);
-    }
-
-    
-    if (!SetConsoleActiveScreenBuffer(hStdout))
-    {
-        printf("Set console active screen buffer - (%d)\n", GetLastError());
-        return 1;
-    }
-
-    delete[] chibuffer;
-
-    */
-
     try
     {
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleApiTest\\Data\\GifSample.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleApiTest\\Data\\emot_icon.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleApiTest\\Data\\miziu.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleApiTest\\Data\\movie.csol");
-        ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleApiTest\\Data\\pikaczu.gif");
+        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\GifSample.gif");
+        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\emot_icon.gif");
+        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\miziu.gif");
+        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\movie.csol");
+        ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\miziu.gif");
         //ConsoleMovieTest movie_test = ConsoleMovieTest::CreateBigMovie();
 
         ConsoleMovieProjector::Show(movie);

@@ -31,7 +31,7 @@ struct FrameInfo
     MovieCOORD m_size;
     MovieCOORD m_coord;
     int m_delay = 0;
-    bool m_restore_to_backgroundColor = false;
+    //bool m_restore_to_backgroundColor = false;
 };
 
 class IConsoleMovie
@@ -47,8 +47,6 @@ public:
     virtual int GetUnitSize() const { return m_unitSize; }
 
     virtual bool IsMovieLooped() const { return m_loop; }
-    virtual bool PrepareBackground() const { return false; }
-    virtual CHAR_INFO* GetBackgroundFrame() const { return nullptr; }
 
     virtual ~IConsoleMovie() {}
 

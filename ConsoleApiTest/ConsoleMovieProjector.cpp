@@ -129,40 +129,28 @@ void ConsoleMovieProjector::Show(IConsoleMovie& movie)
     coordBufCoord.X = 0;
     coordBufCoord.Y = 0;
 
-    if (movie.PrepareBackground())
-    {
-        BOOL fSuccess = WriteConsoleOutput(
-            hNewScreenBuffer, //Screen buffer to write
-            movie.GetBackgroundFrame(), //buffer to copy from
-            coordBufSize, //col-row size of buffer
-            coordBufCoord, //top left src cell in buffer
-            &srctWriteRect);
-
-        if (!fSuccess)
-        {
-            throw ConsoleMovieProjectorException("Write console output failed. Background");
-        }
-    }
-
-    while (movie.IsMovieLooped())
+    do
     {
         //To do
         //react to window resize
         for (int i = 0; i < movie.GetFramesCount(); ++i)
         {
             FrameInfo& frame_info = movie.GetFrameInfo(i);
+            SMALL_RECT dstWriteRect;
+            dstWriteRect.Left = frame_info.m_coord.X;
+            dstWriteRect.Top = frame_info.m_coord.Y;
+            dstWriteRect.Right = frame_info.m_coord.X + frame_info.m_size.X;
+            dstWriteRect.Bottom = frame_info.m_coord.Y + frame_info.m_size.Y;
 
-//             srctWriteRect.Left = 0;
-//             srctWriteRect.Top = 0;
-//             srctWriteRect.Right = frame_info.m_size.X - 1;
-//             srctWriteRect.Bottom = frame_info.m_size.Y - 1;
+            COORD scrBufCoord{ 0, 0 };
+            COORD scrBufSize{ frame_info.m_size.X, frame_info.m_size.Y };
 
             BOOL fSuccess = WriteConsoleOutput(
                 hNewScreenBuffer, //Screen buffer to write
                 movie.GetFrame(i), //buffer to copy from
-                coordBufSize, //col-row size of buffer
-                coordBufCoord, //top left src cell in buffer
-                &srctWriteRect);
+                scrBufSize, //col-row size of buffer
+                scrBufCoord, //top left src cell in buffer
+                &dstWriteRect);
 
             if (!fSuccess)
             {
@@ -170,26 +158,8 @@ void ConsoleMovieProjector::Show(IConsoleMovie& movie)
             }
 
             Sleep(frame_info.m_delay);
-
-            //W tym rozwi¹zaniu gif strasznie przerywa poniewaz musi wyœwitlic pust¹ kratke
-            //Chyba najlepszym rozwi¹zaniem by³oby nastêpna ramke zrobiæ tak duza aby objela obszar poprzedniej ramki,
-            //ktora wymaga powrotu do koloru t³a
-//             if (frame_info.m_restore_to_backgroundColor)
-//             {
-//                 BOOL fSuccess = WriteConsoleOutput(
-//                     hNewScreenBuffer, //Screen buffer to write
-//                     movie.GetBackgroundFrame(), //buffer to copy from
-//                     frame_info.m_size, //col-row size of buffer
-//                     frame_info.m_coord, //top left src cell in buffer
-//                     &srctWriteRect);
-// 
-//                 if (!fSuccess)
-//                 {
-//                     throw ConsoleMovieProjectorException("Write console output failed. Frame : " + std::to_string(i));
-//                 }
-//             }
         }
-    }
+    } while (movie.IsMovieLooped());
 
     if (!SetConsoleActiveScreenBuffer(hStdout))
     {
