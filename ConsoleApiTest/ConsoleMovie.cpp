@@ -1,7 +1,6 @@
 #include "ConsoleMovie.h"
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -293,7 +292,7 @@ ConsoleMovie ConsoleMovie::LoadConsoleMovie(std::string file_full_path)
 ////////////////////////////////////////////////////////////////////////////////
 ConsoleMovie ConsoleMovie::LoadCSolFile(std::string csol_file_full_path)
 {
-    ifstream myfile(csol_file_full_path.c_str());
+    std::ifstream myfile(csol_file_full_path.c_str());
 
     if (!myfile.is_open())
     {
@@ -319,8 +318,8 @@ ConsoleMovie ConsoleMovie::LoadCSolFile(std::string csol_file_full_path)
         throw ConsolMovieException(".scol file has wrong format");
     }
 
-    unsigned short frame_size_x = stoi(results[0]);
-    unsigned short frame_size_y = stoi(results[1]);
+    short frame_size_x = stoi(results[0]);
+    short frame_size_y = stoi(results[1]);
     int frames = stoi(results[2]);
     bool loop = stoi(results[3]) != 0;
     int interval = stoi(results[4]);
@@ -339,7 +338,7 @@ ConsoleMovie ConsoleMovie::LoadGifFile(std::string gif_file_full_path)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ConsoleMovie::FillFrames(ifstream& myfile)
+void ConsoleMovie::FillFrames(std::ifstream& myfile)
 {
     string frames_info;
     string line;

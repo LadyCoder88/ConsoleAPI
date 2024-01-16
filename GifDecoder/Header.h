@@ -40,10 +40,10 @@ namespace Gif
     // - This block cannot be modified by any extension
     struct Header
     {
-        unsigned  char m_Signature[3];  //Identifies the GIF Data Stream. This field contains
-                                        //the fixed value 'GIF'.
-        unsigned  char m_Version[3];    //"87a" - May 1987
-                                        //"89a" - July 1989
+        unsigned  char m_Signature[3] = { 0, 0, 0 };    //Identifies the GIF Data Stream. This field contains
+                                                        //the fixed value 'GIF'.
+        unsigned  char m_Version[3] = { 0, 0, 0 };      //"87a" - May 1987
+                                                        //"89a" - July 1989
     };
 
     struct Color

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <fstream>
 #include "IConsoleMovie.h"
 #include <vector>
 #include "../GifDecoder/GifObject.h"

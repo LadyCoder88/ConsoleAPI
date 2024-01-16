@@ -40,8 +40,8 @@ namespace Gif
         ~GifObject();
 
         int GetFrameCount() const { return m_framesCount; }
-        unsigned short GetImageHeight() const { return m_imageHeight; }
-        unsigned short GetImageWigth() const { return m_imageWidth; }
+        short GetImageHeight() const { return m_imageHeight; }
+        short GetImageWigth() const { return m_imageWidth; }
 
         //Function can throw std::out_of_range exception
         const Frame& GetFrame(int idx) const;
@@ -108,8 +108,8 @@ namespace Gif
         std::vector<Frame*> m_frames;
 
         RGBAColor m_backgroundColor;
-        unsigned short m_imageHeight;
-        unsigned short m_imageWidth;
+        short m_imageHeight;
+        short m_imageWidth;
     };
 
 };

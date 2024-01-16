@@ -1,6 +1,6 @@
 #include "ConsoleMovieTest.h"
 
-ConsoleMovieTest::ConsoleMovieTest(unsigned short frame_size_x, unsigned short frame_size_y)
+ConsoleMovieTest::ConsoleMovieTest(short frame_size_x, short frame_size_y)
     :IConsoleMovie({ frame_size_x, frame_size_y }, 1, true), m_frameInfo(frame_size_x, frame_size_y, 0, 0, 5000)
 {
     m_frames = new CHAR_INFO[frame_size_x * frame_size_y];

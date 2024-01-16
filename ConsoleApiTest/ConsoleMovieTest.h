@@ -17,7 +17,7 @@ public:
     ~ConsoleMovieTest();
 
 private:
-    ConsoleMovieTest(unsigned short frame_size_x, unsigned short frame_size_y);
+    ConsoleMovieTest(short frame_size_x, short frame_size_y);
 
     CHAR_INFO* m_frames = nullptr;
     FrameInfo m_frameInfo;

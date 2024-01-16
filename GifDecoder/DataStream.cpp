@@ -5,13 +5,12 @@
 #include "TableBasedImage.h"
 #include "GraphicControlExtension.h"
 
-using namespace std;
 using namespace Gif;
 
 //------------------------------------------------------------------------------
 DataStream DataStream::Load(std::string file_name)
 {
-    ifstream file(file_name.c_str(), std::ios::out | std::ios::binary);
+    std::ifstream file(file_name.c_str(), std::ios::in | std::ios::binary);
     if (!file)
         throw DataStreamException("Couldn't load .gif file");
 

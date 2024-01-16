@@ -100,8 +100,8 @@ void ConsoleMovieProjector::Show(IConsoleMovie& movie)
     {
         throw ConsoleMovieProjectorException("GetCurrentConsoleFontEx : " + std::to_string(GetLastError()));
     }
-    font_info.dwFontSize.Y = movie.GetUnitSize();
-    font_info.dwFontSize.X = movie.GetUnitSize();
+    font_info.dwFontSize.Y = 1;
+    font_info.dwFontSize.X = 1;
     if (!SetCurrentConsoleFontEx(hNewScreenBuffer, FALSE, &font_info))
     {
         throw ConsoleMovieProjectorException("SetCurrentConsoleFontEx : " + std::to_string(GetLastError()));

@@ -13,8 +13,8 @@ private:
 
 struct MovieCOORD
 {
-    unsigned short X;
-    unsigned short Y;
+    short X;
+    short Y;
 
     operator COORD()
     {
@@ -25,13 +25,12 @@ struct MovieCOORD
 struct FrameInfo
 {
     FrameInfo() :m_size{ 0,0 }, m_coord{ 0,0 } {}
-    FrameInfo(unsigned short size_x, unsigned short size_y) :m_size{ size_x, size_y }, m_coord { 0,0 } {}
-    FrameInfo(unsigned short size_x, unsigned short size_y, unsigned short coord_x, unsigned short coord_y, short _delay)
+    FrameInfo(short size_x, short size_y) :m_size{ size_x, size_y }, m_coord { 0,0 } {}
+    FrameInfo(short size_x, short size_y, short coord_x, short coord_y, short _delay)
         :m_size{ size_x, size_y }, m_coord{ coord_x, coord_y }, m_delay(_delay){}
     MovieCOORD m_size;
     MovieCOORD m_coord;
     int m_delay = 0;
-    //bool m_restore_to_backgroundColor = false;
 };
 
 class IConsoleMovie
