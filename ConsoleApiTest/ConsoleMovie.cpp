@@ -50,7 +50,7 @@ void InitTable(CHAR_INFO* dest, const CHAR_INFO& value, int size)
 
 static void FrameDump(CHAR_INFO* frame, int size, int width)
 {
-    std::ofstream file("D:\\Programy\\Other\\ConsoleApiTest\\GifDecoder\\frame_dump.txt");
+    std::ofstream file("GifDecoder\\frame_dump.txt");
     if (!file)
     {
         std::cout << "An error occurred opening the file" << std::endl;

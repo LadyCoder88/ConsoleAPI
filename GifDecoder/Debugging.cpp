@@ -6,7 +6,7 @@ using namespace Gif;
 
 void LogColorTable(Color* color_table, int size)
 {
-    std::ofstream file("D:\\Programy\\Other\\ConsoleApiTest\\GifDecoder\\color_debug.txt");
+    std::ofstream file("GifDecoder\\color_debug.txt");
     if (!file)
     {
         std::cout << "An error occurred opening the file" << std::endl;

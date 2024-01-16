@@ -217,11 +217,7 @@ int main()
 
     try
     {
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\GifSample.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\emot_icon.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\miziu.gif");
-        //ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\movie.csol");
-        ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("D:\\Programy\\Other\\ConsoleAPI\\Data\\pikachu.gif");
+        ConsoleMovie movie = ConsoleMovie::LoadConsoleMovie("..\\Data\\pikachu.gif");
         //ConsoleMovieTest movie_test = ConsoleMovieTest::CreateBigMovie();
 
         ConsoleMovieProjector::Show(movie);
